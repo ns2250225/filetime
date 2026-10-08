@@ -1,0 +1,13 @@
+/target/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.dll
+*.msix
+*.cer
+*.part
+assets/exe-icon-preview.png
+.DS_Store
+Thumbs.db

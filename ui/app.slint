@@ -1,0 +1,138 @@
+import { Button, LineEdit, ScrollView, CheckBox } from "std-widgets.slint";
+
+export component App inherits Window {
+    title: "FileTime · 文件时光机";
+    icon: @image-url("../assets/filetime-icon.png");
+    width: 1060px;
+    height: 680px;
+    background: #f5f7fb;
+    in-out property <string> path;
+    in-out property <string> description;
+    in-out property <string> status-text;
+    in-out property <string> detail-text;
+    in-out property <[string]> files;
+    in-out property <[string]> versions;
+    in-out property <int> selected-file: -1;
+    in-out property <int> selected-version: -1;
+    in-out property <bool> confirm-replace: false;
+    in-out property <bool> confirm-stop: false;
+    callback refresh();
+    callback choose-file(int);
+    callback choose-version(int);
+    callback init-file();
+    callback commit-file();
+    callback rollback-file();
+    callback export-file();
+    callback export-archive();
+    callback import-archive();
+    callback compare-file();
+    callback stop-file();
+    callback resume-file();
+    callback verify-file();
+    callback install-menu();
+    callback remove-menu();
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 12px;
+        Text { text: "FileTime  文件时光机"; font-size: 25px; font-weight: 700; color: #223451; }
+        HorizontalLayout {
+            spacing: 8px;
+            Text { text: "文件路径"; vertical-alignment: center; }
+            LineEdit { text <=> root.path; horizontal-stretch: 1; }
+            Button { text: "创建管理"; clicked => { root.init-file(); } }
+            Button { text: "刷新"; clicked => { root.refresh(); } }
+        }
+        HorizontalLayout {
+            spacing: 12px;
+            Rectangle {
+                background: white; border-radius: 10px;
+                horizontal-stretch: 3;
+                VerticalLayout {
+                    padding: 12px; spacing: 8px;
+                    Text { text: "已管理文件"; font-size: 18px; font-weight: 600; }
+                    ScrollView {
+                        VerticalLayout {
+                            spacing: 4px;
+                            for item[index] in root.files: Button {
+                                text: item;
+                                horizontal-stretch: 1;
+                                clicked => { root.choose-file(index); }
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: white; border-radius: 10px;
+                horizontal-stretch: 3;
+                VerticalLayout {
+                    padding: 12px; spacing: 8px;
+                    Text { text: "版本历史"; font-size: 18px; font-weight: 600; }
+                    ScrollView {
+                        VerticalLayout {
+                            spacing: 4px;
+                            for item[index] in root.versions: Button {
+                                text: item;
+                                horizontal-stretch: 1;
+                                clicked => { root.choose-version(index); }
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                background: white; border-radius: 10px;
+                horizontal-stretch: 4;
+                ScrollView {
+                    VerticalLayout {
+                        padding: 12px; spacing: 8px;
+                        Text { text: "详情与操作"; font-size: 18px; font-weight: 600; }
+                        Text { text: root.detail-text; wrap: word-wrap; color: #44546a; horizontal-stretch: 1; }
+                        Text { text: "版本说明"; }
+                        LineEdit { text <=> root.description; placeholder-text: "输入本次修改说明"; horizontal-stretch: 1; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Button { text: "提交版本"; horizontal-stretch: 1; clicked => { root.commit-file(); } }
+                            Button { text: "回滚选中"; horizontal-stretch: 1; clicked => { root.rollback-file(); } }
+                        }
+                        CheckBox { text: "确认回滚将替换当前文件（未提交内容会备份）"; checked <=> root.confirm-replace; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Button { text: "导出选中"; horizontal-stretch: 1; clicked => { root.export-file(); } }
+                            Button { text: "比较版本"; horizontal-stretch: 1; clicked => { root.compare-file(); } }
+                        }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Button { text: "导出完整归档"; horizontal-stretch: 1; clicked => { root.export-archive(); } }
+                            Button { text: "导入归档"; horizontal-stretch: 1; clicked => { root.import-archive(); } }
+                        }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Button { text: "停止管理"; horizontal-stretch: 1; clicked => { root.stop-file(); } }
+                            Button { text: "恢复管理"; horizontal-stretch: 1; clicked => { root.resume-file(); } }
+                        }
+                        CheckBox { text: "确认停止管理（保留历史）"; checked <=> root.confirm-stop; }
+                        Button { text: "完整性检查"; clicked => { root.verify-file(); } }
+                        Button { text: "安装资源管理器右键菜单"; clicked => { root.install-menu(); } }
+                        Button { text: "移除右键菜单"; clicked => { root.remove-menu(); } }
+                    }
+                }
+            }
+        }
+        Text { text: root.status-text; color: #255eb1; wrap: word-wrap; horizontal-stretch: 1; }
+    }
+}
+
+export component Tray inherits SystemTrayIcon {
+    icon: @image-url("../assets/filetime-icon.png");
+    tooltip: "FileTime · 文件时光机";
+    visible: true;
+    callback open();
+    callback exit();
+    clicked => { root.open(); }
+    Menu {
+        MenuItem { title: "打开 FileTime"; activated => { root.open(); } }
+        MenuItem { title: "退出"; activated => { root.exit(); } }
+    }
+}
